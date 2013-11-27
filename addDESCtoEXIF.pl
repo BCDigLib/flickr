@@ -18,7 +18,7 @@ sub main {
         if (@ARGV);							
     
     setDescription();
-    readDescription();
+    readDescription($file);
 
     # Read filename keys to process
     while ( my ($filename, $description) = each(%imageDescription) ) {
@@ -34,18 +34,27 @@ sub main {
         my $count = scalar keys %$info;
     
         if ($count == 0) {
-            # Holder for coordinate pairs
+	    
+	    # Create a new object
+	    my $exifTool = new Image::ExifTool;
+	    
+            # Holder for new  values
 	    my %newDescription;
 	    
-	    $newDescription{'ImageDescription'} =
-	    $imageDescription{$filename} -> {'ImageDescription'};
+	    $newDescription{'ImageDescription'} = $imageDescription{$filename} -> {'ImageDescription'};
 					
 	    for my $exifTag ( keys %newDescription ) {
-	        print "$exifTag is $imageDescription{$exifTag}\n";
-	        my ($success, $error) = SetNewValue($exifTag, $imageDescription{$exifTag});
+	        print "$exifTag is $newDescription{'ImageDescription'}\n";
+		
+		#Set new value
+		$exifTool->SetNewValue($exifTag, $newDescription{'ImageDescription'});
+		
+		#Write new value
+		$exifTool->WriteInfo($filename);
+		
 	    }   
 	} else {
-	    print "Image Description Tag present\n";
+	    print "ImageDescription Tag present\n";
 	} 
     }
        
@@ -72,7 +81,7 @@ sub readDescription {
 
 	$imageDescription{ $filename } =
 	{
-            exifdescription   => $description,
+            ImageDescription   => $description,
 	};
     }
 }
