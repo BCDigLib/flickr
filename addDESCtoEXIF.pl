@@ -2,7 +2,6 @@
    
 use strict;
 use FileHandle;
-use Switch;
 use File::Copy;
 
 use Image::ExifTool;
@@ -18,36 +17,33 @@ sub main {
     my $file = shift @ARGV
         if (@ARGV);							
     
-        setDescription();
-        readDescription();
+    setDescription();
+    readDescription();
 
-# Read filename keys to process
+    # Read filename keys to process
     while ( my ($filename, $description) = each(%imageDescription) ) {
     
-print "$filename\n";
-	#Create backup image
-	my $backup = "orig_" . $filename;
-	copy($filename,$backup)
-	    or die "Backup failed: $!";
+	print "$filename\n";
+        #Create backup image
+        my $backup = "orig_" . $filename;
+        copy($filename,$backup)
+            or die "Backup failed: $!";
 	   
-
-	# Pull ImageDescription Tags to see if they exist
-	my $info = Image::ExifTool::ImageInfo($filename, @oldDescription);
-	my $count = scalar keys %$info;
+        # Pull ImageDescription Tags to see if they exist
+        my $info = Image::ExifTool::ImageInfo($filename, @oldDescription);
+        my $count = scalar keys %$info;
     
-	if ($count == 0) {
-	    # Holder for coordinate pairs
+        if ($count == 0) {
+            # Holder for coordinate pairs
 	    my %newDescription;
 	    
 	    $newDescription{'ImageDescription'} =
-	        $imageDescription{$filename} -> {'ImageDescription'};
+	    $imageDescription{$filename} -> {'ImageDescription'};
 					
 	    for my $exifTag ( keys %newDescription ) {
-		print "$exifTag is $imageDescription{$exifTag}\n";
-		my ($success, $error) = SetNewValue($exifTag, $imageDescription{$exifTag});
-	    }
-	    
-	    
+	        print "$exifTag is $imageDescription{$exifTag}\n";
+	        my ($success, $error) = SetNewValue($exifTag, $imageDescription{$exifTag});
+	    }   
 	} else {
 	    print "Image Description Tag present\n";
 	} 
@@ -56,15 +52,12 @@ print "$filename\n";
     exit 1;
 }
 
-
 #-----------------------------------------------------------------------------
 sub setDescription {
     
     @oldDescription = ("ImageDescription");
-                    }
 
-
-
+}
 
 #-----------------------------------------------------------------------------
 sub readDescription {
@@ -73,17 +66,13 @@ sub readDescription {
     my $fh = new FileHandle();
     $fh->open($file);
     
-    while( not($fh->eof()) )
-    {
+    while( not($fh->eof()) ) {
 	my $line = $fh->getline();
 	my ($filename, $description) = split(/\t/, $line);
 
-
-    $imageDescription{ $filename } =
+	$imageDescription{ $filename } =
 	{
             exifdescription   => $description,
 	};
     }
 }
-
-
