@@ -8,6 +8,7 @@ use Image::ExifTool;
 
 my @oldDescription;
 my %imageDescription;
+my %titles;
 
 main();
 
@@ -27,12 +28,12 @@ sub main {
         #Create backup image
         my $backup = "orig_" . $filename;
         copy($filename,$backup)
-            or die "Backup failed: $!";
+	    or die "Backup failed: $!";
 	   
         # Pull ImageDescription Tags to see if they exist
         my $info = Image::ExifTool::ImageInfo($filename, @oldDescription);
         my $count = scalar keys %$info;
-    
+
         if ($count == 0) {
 	    
 	    # Create a new object
@@ -40,7 +41,7 @@ sub main {
 	    
             # Holder for new  values
 	    my %newDescription;
-	    
+	    	     
 	    $newDescription{'ImageDescription'} = $imageDescription{$filename} -> {'ImageDescription'};
 					
 	    for my $exifTag ( keys %newDescription ) {
@@ -48,6 +49,8 @@ sub main {
 		
 		#Set new value
 		$exifTool->SetNewValue($exifTag, $newDescription{'ImageDescription'});
+		
+		$exifTool->SetNewValue('Title', $titles{$filename} );
 		
 		#Write new value
 		$exifTool->WriteInfo($filename);
@@ -77,11 +80,14 @@ sub readDescription {
     
     while( not($fh->eof()) ) {
 	my $line = $fh->getline();
-	my ($filename, $description) = split(/\t/, $line);
+	my ($filename, $title, $description) = split(/\t/, $line);
 
 	$imageDescription{ $filename } =
 	{
             ImageDescription   => $description,
 	};
+	
+	$titles{$filename} = $title;
+	
     }
 }
